@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoopExpress KPIs - Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff8c42 0%, #ffb976 50%, #ffffff 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: linear-gradient(180deg, rgba(255, 140, 66, 0.9) 0%, rgba(255, 255, 255, 0.9) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 0 20px 20px 0;
+            box-shadow: 0 8px 32px rgba(255, 140, 66, 0.3);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            color: #ff6b1a;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .sede-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 185, 118, 0.6) 100%);
+            border: 2px solid rgba(255, 140, 66, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .sede-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 140, 66, 0.4);
+        }
+
+        .sede-card.active {
+            background: linear-gradient(135deg, #ff6b1a 0%, #ff8c42 100%);
+            color: white;
+        }
+
+        .sede-card h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .sede-stats {
+            font-size: 11px;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .content-area {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 185, 118, 0.3) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(255, 140, 66, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 140, 66, 0.2);
+            display: none;
+        }
+
+        .content-area.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .content-area h2 {
+            color: #ff6b1a;
+            margin-bottom: 30px;
+            font-size: 24px;
+            text-align: center;
+            border-bottom: 3px solid #ff8c42;
+            padding-bottom: 15px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 185, 118, 0.3) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(255, 140, 66, 0.15);
+            border: 1px solid rgba(255, 140, 66, 0.2);
+        }
+
+        .kpi-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b1a;
+            margin-bottom: 5px;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .charts-section {
+            margin-bottom: 30px;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-box {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 185, 118, 0.2) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(255, 140, 66, 0.15);
+            border: 1px solid rgba(255, 140, 66, 0.2);
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ff6b1a;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+  .chart-canvas {
+    width: 100% !important;
+    height: 320px !important;
+}
+
+        .full-width-chart {
+            grid-column: 1 / -1;
+        }
+
+        .data-tables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .data-table {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 185, 118, 0.2) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(255, 140, 66, 0.15);
+            border: 1px solid rgba(255, 140, 66, 0.2);
+        }
+
+        .table-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ff6b1a;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .data-table th {
+            background: #ff6b1a;
+            color: white;
+            padding: 8px 5px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .data-table td {
+            padding: 6px 5px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 140, 66, 0.2);
+        }
+
+        .hipotecarios-section {
+            margin-top: 20px;
+            background: linear-gradient(135deg, rgba(255, 107, 26, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #ff6b1a;
+        }
+
+        .hipotecarios-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ff6b1a;
+            margin-bottom: 15px;
+        }
+
+        .medio-item {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trimestre-btn {
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .trimestre-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .trimestre-btn.active {
+            background: #ff6b1a !important;
+            color: white !important;
+        }
+
+        .welcome-message {
+            text-align: center;
+            color: #ff6b1a;
+            font-size: 24px;
+            font-weight: 300;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 185, 118, 0.3) 100%);
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(255, 140, 66, 0.2);
+            backdrop-filter: blur(10px);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-row, .data-tables {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                border-radius: 0 0 20px 20px;
+                order: 2;
+                max-height: 300px;
+            }
+            .main-content { order: 1; padding: 10px; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>📊 CoopExpress KPIs</h2>
+        <p style="text-align: center; font-size: 11px; color: #666; margin-bottom: 10px;">Seguimiento por Trimestre</p>
+        
+        <!-- Selector de Trimestre -->
+        <div style="margin-bottom: 20px;">
+            <div class="trimestre-selector" style="display: flex; gap: 5px; margin-bottom: 15px;">
+                <button class="trimestre-btn active" data-trimestre="q2" style="flex: 1; padding: 8px; border: none; border-radius: 8px; background: #ff6b1a; color: white; font-size: 11px; cursor: pointer;">Q2 2025</button>
+                <button class="trimestre-btn" data-trimestre="q3" style="flex: 1; padding: 8px; border: none; border-radius: 8px; background: #ccc; color: #666; font-size: 11px; cursor: pointer;">Q3 2025</button>
+            </div>
+        </div>
+        
+        <!-- TARJETAS Q2 -->
+        <div class="sede-card" data-sede="general" data-trimestre="q2" style="background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%); color: white; border: 2px solid #4CAF50;">
+    <h3>📊 General Q2</h3>
+    <div class="sede-stats">
+        🏆 Dashboard <br>
+        📈 Rankings por KPI<br>
+        🎯 Análisis de Desempeño<br>
+        📋 Todas las Agencias
+    </div>
+</div>
+
+        <!-- TARJETAS Q3 -->
+        <div class="sede-card" data-sede="general" data-trimestre="q3" style="display: none; background: linear-gradient(135deg, #2196F3 0%, #42A5F5 100%); color: white; border: 2px solid #2196F3;">
+    <h3>📊 General Q3</h3>
+    <div class="sede-stats">
+        💬 3,369 mensajes totales<br>
+        🎯 38 oportunidades<br>
+        🏠 200 hipotecarios<br>
+        💰 Q44,152 invertido<br>
+        💵 Q1,030,000 desembolsos
+    </div>
+</div>
+<div class="sede-card" data-sede="central" data-trimestre="q2">
+    <h3>🏢 Central</h3>
+    <div class="sede-stats">
+        💬 675 conversaciones<br>
+        🎯 1,948 leads<br>
+        🏠 97 hipotecarios<br>
+        💰 Q11,251 invertido
+    </div>
+</div>
+
+        <div class="sede-card" data-sede="coban" data-trimestre="q2">
+            <h3>🌲 Cobán</h3>
+            <div class="sede-stats">
+                💬 449 conversaciones<br>
+                🎯 113 leads<br>
+                🏠 73 hipotecarios<br>
+                💰 Q13,264 invertido
+            </div>
+        </div>
+        
+        <div class="sede-card" data-sede="escuintla" data-trimestre="q2">
+            <h3>🌊 Escuintla</h3>
+            <div class="sede-stats">
+                💬 438 conversaciones<br>
+                🎯 80 leads<br>
+                🏠 21 hipotecarios<br>
+                💰 Q9,505 invertido
+            </div>
+        </div>
+        
+        <div class="sede-card" data-sede="mazatenango" data-trimestre="q2">
+            <h3>☕ Mazatenango</h3>
+            <div class="sede-stats">
+                💬 520 conversaciones<br>
+                🎯 0 leads<br>
+                🏠 92 hipotecarios<br>
+                💰 Q8,820 invertido
+            </div>
+        </div>
+        
+        <div class="sede-card" data-sede="peten" data-trimestre="q2">
+            <h3>🦜 Petén</h3>
+            <div class="sede-stats">
+                💬 507 conversaciones<br>
+                🎯 0 leads<br>
+                🏠 43 hipotecarios<br>
+                💰 Q9,487 invertido
+            </div>
+        </div>
+        
+        <div class="sede-card" data-sede="cuatrocaminos" data-trimestre="q2">
+            <h3>🛣️ 4 Caminos</h3>
+            <div class="sede-stats">
+                💬 919 conversaciones<br>
+                🎯 0 leads<br>
+                🏠 6 hipotecarios<br>
+                💰 Q10,615 invertido
+            </div>
+        </div>
+
+        <!-- TARJETAS Q3 -->
+        <div class="sede-card" data-sede="central" data-trimestre="q3" style="display: none;">
+            <h3>🏢 Central</h3>
+            <div class="sede-stats">
+                💬 2,096 mensajes<br>
+                🎯 17 oportunidades<br>
+                🏠 164 hipotecarios<br>
+                💰 Q20,338 invertido<br>
+                💵 Q725,000 desembolsos
+            </div>
+        </div>
+
+        <div class="sede-card" data-sede="coban" data-trimestre="q3" style="display: none;">
+            <h3>🌲 Cobán</h3>
+            <div class="sede-stats">
+                💬 488 mensajes<br>
+                🎯 12 oportunidades<br>
+                🏠 13 hipotecarios<br>
+                💰 Q5,050 invertido<br>
+                � Q100,000 desembolsos
+            </div>
+        </div>
+        
+        <div class="sede-card" data-sede="escuintla" data-trimestre="q3" style="display: none;">
+            <h3>🌊 Escuintla</h3>
+            <div class="sede-stats">
+                💬 347 mensajes<br>
+                🎯 2 oportunidades<br>
+                🏠 9 hipotecarios<br>
+                💰 Q4,794 invertido<br>
+                � Q60,000 desembolsos
+            </div>
+        </div>
+        
+        <div class="sede-card" data-sede="mazatenango" data-trimestre="q3" style="display: none;">
+            <h3>☕ Mazatenango</h3>
+            <div class="sede-stats">
+                💬 149 mensajes<br>
+                🎯 2 oportunidades<br>
+                🏠 4 hipotecarios<br>
+                💰 Q4,566 invertido<br>
+                � Q70,000 desembolsos
+            </div>
+        </div>
+        
+        <div class="sede-card" data-sede="peten" data-trimestre="q3" style="display: none;">
+            <h3>🦜 Petén</h3>
+            <div class="sede-stats">
+                💬 171 mensajes<br>
+                🎯 2 oportunidades<br>
+                🏠 3 hipotecarios<br>
+                💰 Q4,599 invertido<br>
+                � Q75,000 desembolsos
+            </div>
+        </div>
+        
+        <div class="sede-card" data-sede="cuatrocaminos" data-trimestre="q3" style="display: none;">
+            <h3>🛣️ 4 Caminos</h3>
+            <div class="sede-stats">
+                💬 118 mensajes<br>
+                🎯 3 oportunidades<br>
+                🏠 7 hipotecarios<br>
+                💰 Q4,805 invertido<br>
+                � Q0 desembolsos
+            </div>
+        </div>
+   
+    </div>
+
+    <div class="main-content">
+        <div class="welcome-message" id="welcome">
+            <h2>📈 Dashboard CoopExpress</h2>
+            <p>Selecciona una sede para ver KPIs detallados</p>
+        </div>
+
+
+
+        <!-- COBÁN -->
+        <div class="content-area" id="content-coban">
+            <h2>🌲 Cobán - KPIs Agosto 2025</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-number">449</div>
+                    <div class="kpi-label">Conversaciones</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">113</div>
+                    <div class="kpi-label">Leads</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">73</div>
+                    <div class="kpi-label">Hipotecarios</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">661,653</div>
+                    <div class="kpi-label">Alcance</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">1,908,073</div>
+                    <div class="kpi-label">Impresiones</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">Q24.64</div>
+                    <div class="kpi-label">CPR Promedio</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">Q13,264</div>
+                    <div class="kpi-label">Importe Total</div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <div class="chart-title">Conversaciones Diarias</div>
+                        <canvas id="chart-coban-daily" class="chart-canvas"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-title">Leads vs Conversaciones</div>
+                        <canvas id="chart-coban-conversion" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-box full-width-chart">
+                        <div class="chart-title">Performance Semanal</div>
+                        <canvas id="chart-coban-weekly" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-tables">
+                <div class="data-table">
+                    <div class="table-title">Datos por Día</div>
+                    <table id="table-coban-daily"></table>
+                </div>
+                <div class="data-table">
+                    <div class="table-title">Datos por Semana</div>
+                    <table id="table-coban-weekly"></table>
+                </div>
+            </div>
+
+            <div class="hipotecarios-section">
+                <div class="hipotecarios-title">Hipotecarios por Medio</div>
+                <div class="medio-item">
+                    <span>WA CoopeXpress 9799</span>
+                    <span><strong>73 hipotecarios</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ESCUINTLA -->
+        <div class="content-area" id="content-escuintla">
+            <h2>🌊 Escuintla - KPIs Agosto 2025</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-number">438</div>
+                    <div class="kpi-label">Conversaciones</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">80</div>
+                    <div class="kpi-label">Leads</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">21</div>
+                    <div class="kpi-label">Hipotecarios</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">612,121</div>
+                    <div class="kpi-label">Alcance</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">823,257</div>
+                    <div class="kpi-label">Impresiones</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">Q19.09</div>
+                    <div class="kpi-label">CPR Promedio</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">Q9,505</div>
+                    <div class="kpi-label">Importe Total</div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <div class="chart-title">Conversaciones Diarias</div>
+                        <canvas id="chart-escuintla-daily" class="chart-canvas"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-title">Leads vs Conversaciones</div>
+                        <canvas id="chart-escuintla-conversion" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-box full-width-chart">
+                        <div class="chart-title">Performance Semanal</div>
+                        <canvas id="chart-escuintla-weekly" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-tables">
+                <div class="data-table">
+                    <div class="table-title">Datos por Día</div>
+                    <table id="table-escuintla-daily"></table>
+                </div>
+                <div class="data-table">
+                    <div class="table-title">Datos por Semana</div>
+                    <table id="table-escuintla-weekly"></table>
+                </div>
+            </div>
+
+            <div class="hipotecarios-section">
+                <div class="hipotecarios-title">Hipotecarios por Medio</div>
+                <div class="medio-item">
+                    <span>WA CoopeXpress 9799</span>
+                    <span><strong>21 hipotecarios</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAZATENANGO -->
+        <div class="content-area" id="content-mazatenango">
+            <h2>☕ Mazatenango - KPIs Agosto 2025</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-number">520</div>
+                    <div class="kpi-label">Conversaciones</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">0</div>
+                    <div class="kpi-label">Leads</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">92</div>
+                    <div class="kpi-label">Hipotecarios</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">812,792</div>
+                    <div class="kpi-label">Alcance</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">1,043,929</div>
+                    <div class="kpi-label">Impresiones</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">Q16.17</div>
+                    <div class="kpi-label">CPR Promedio</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">Q8,820</div>
+                    <div class="kpi-label">Importe Total</div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <div class="chart-title">Conversaciones Diarias</div>
+                        <canvas id="chart-mazatenango-daily" class="chart-canvas"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-title">CPR por Día</div>
+                        <canvas id="chart-mazatenango-cpr" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-box full-width-chart">
+                        <div class="chart-title">Performance Semanal</div>
+                        <canvas id="chart-mazatenango-weekly" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-tables">
+                <div class="data-table">
+                    <div class="table-title">Datos por Día</div>
+                    <table id="table-mazatenango-daily"></table>
+                </div>
+                <div class="data-table">
+                    <div class="table-title">Datos por Semana</div>
+                    <table id="table-mazatenango-weekly"></table>
+                </div>
+            </div>
+
+            <div class="hipotecarios-section">
+                <div class="hipotecarios-title">Hipotecarios por Medio</div>
+                <div class="medio-item">
+                    <span>WA CoopeXpress 9799</span>
+                    <span><strong>92 hipotecarios</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PETÉN -->
+        <div class="content-area" id="content-peten">
+            <h2>🦜 Petén - KPIs Agosto 2025</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-number">507</div>
+                    <div class="kpi-label">Conversaciones</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">0</div>
+                    <div class="kpi-label">Leads</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">43</div>
+                    <div class="kpi-label">Hipotecarios</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">883,722</div>
+                    <div class="kpi-label">Alcance</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">1,073,329</div>
+                    <div class="kpi-label">Impresiones</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">Q19.17</div>
+                    <div class="kpi-label">CPR Promedio</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">Q9,487</div>
+                    <div class="kpi-label">Importe Total</div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <div class="chart-title">Conversaciones Diarias</div>
+                        <canvas id="chart-peten-daily" class="chart-canvas"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-title">CPR por Día</div>
+                        <canvas id="chart-peten-cpr" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-box full-width-chart">
+                        <div class="chart-title">Performance Semanal</div>
+                        <canvas id="chart-peten-weekly" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-tables">
+                <div class="data-table">
+                    <div class="table-title">Datos por Día</div>
+                    <table id="table-peten-daily"></table>
+                </div>
+                <div class="data-table">
+                    <div class="table-title">Datos por Semana</div>
+                    <table id="table-peten-weekly"></table>
+                </div>
+            </div>
+
+            <div class="hipotecarios-section">
+                <div class="hipotecarios-title">Hipotecarios por Medio</div>
+                <div class="medio-item">
+                    <span>WA CoopeXpress 9799</span>
+                    <span><strong>43 hipotecarios</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 CAMINOS -->
+        <div class="content-area" id="content-cuatrocaminos">
+            <h2>🛣️ 4 Caminos - KPIs Agosto 2025</h2>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-number">919</div>
+                    <div class="kpi-label">Conversaciones</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">0</div>
+                    <div class="kpi-label">Leads</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">6</div>
+                    <div class="kpi-label">Hipotecarios</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">968,488</div>
+                    <div class="kpi-label">Alcance</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">1,268,719</div>
+                    <div class="kpi-label">Impresiones</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">Q11.65</div>
+                    <div class="kpi-label">CPR Promedio</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-number">Q10,615</div>
+                    <div class="kpi-label">Importe Total</div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <div class="chart-title">Conversaciones Diarias</div>
+<canvas id="chart-cuatrocaminos-daily" class="chart-canvas"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-title">CPR por Día</div>
+<canvas id="chart-cuatrocaminos-cpr" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-box full-width-chart">
+                        <div class="chart-title">Performance Semanal</div>
+<canvas id="chart-cuatrocaminos-weekly" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-tables">
+                <div class="data-table">
+                    <div class="table-title">Datos por Día</div>
+<table id="table-cuatrocaminos-daily"></table>
+                </div>
+                <div class="data-table">
+                    <div class="table-title">Datos por Semana</div>
+<table id="table-cuatrocaminos-weekly"></table>
+                </div>
+            </div>
+
+            <div class="hipotecarios-section">
+                <div class="hipotecarios-title">Hipotecarios por Medio</div>
+                <div class="medio-item">
+                    <span>WA CoopeXpress 9799</span>
+                    <span><strong>6 hipotecarios</strong></span>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- CENTRAL -->
+<div class="content-area" id="content-central">
+    <h2>🏢 Central - KPIs Agosto 2025</h2>
+    
+    <div class="kpi-grid">
+        <div class="kpi-card">
+<div class="kpi-number">675</div> <!-- Conversaciones -->
+            <div class="kpi-label">Conversaciones</div>
+        </div>
+        <div class="kpi-card">
+<div class="kpi-number">1,948</div> <!-- Leads -->  
+            <div class="kpi-label">Leads</div>
+        </div>
+        <div class="kpi-card">
+<div class="kpi-number">97</div> <!-- Hipotecarios -->
+            <div class="kpi-label">Hipotecarios</div>
+        </div>
+        <div class="kpi-card">
+<div class="kpi-number">850,000</div> <!-- Alcance -->
+            <div class="kpi-label">Alcance</div>
+        </div>
+        <div class="kpi-card">
+<div class="kpi-number">1,200,000</div> <!-- Impresiones -->
+            <div class="kpi-label">Impresiones</div>
+        </div>
+        <div class="kpi-card">
+<div class="kpi-number">Q12.26</div> <!-- CPR Promedio -->
+            <div class="kpi-label">CPR Promedio</div>
+        </div>
+        <div class="kpi-card">
+<div class="kpi-number">Q11,251</div> <!-- Importe Total -->
+            <div class="kpi-label">Importe Total</div>
+        </div>
+    </div>
+
+    <div class="charts-section">
+        <div class="charts-row">
+            <div class="chart-box">
+                <div class="chart-title">Conversaciones Diarias</div>
+                <canvas id="chart-central-daily" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Leads vs Conversaciones</div>
+                <canvas id="chart-central-conversion" class="chart-canvas"></canvas>
+            </div>
+        </div>
+        <div class="charts-row">
+            <div class="chart-box full-width-chart">
+                <div class="chart-title">Performance Semanal</div>
+                <canvas id="chart-central-weekly" class="chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="data-tables">
+        <div class="data-table">
+            <div class="table-title">Datos por Día</div>
+            <table id="table-central-daily"></table>
+        </div>
+        <div class="data-table">
+            <div class="table-title">Datos por Semana</div>
+            <table id="table-central-weekly"></table>
+        </div>
+    </div>
+
+    <div class="hipotecarios-section">
+        <div class="hipotecarios-title">Hipotecarios por Medio</div>
+<div class="medio-item">
+    <span>Digital/Web</span>
+    <span><strong>97 hipotecarios</strong></span>
+</div>
+    </div>
+
+
+</div>
+
+<!-- GENERAL -->
+<div class="content-area" id="content-general">
+    <h2>📊 General - Dashboard </h2>
+    
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-number">3,833</div>
+            <div class="kpi-label">Total Conversaciones</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-number">2,221</div>
+            <div class="kpi-label">Total Leads</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-number">337</div>
+            <div class="kpi-label">Total Hipotecarios</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-number">6</div>
+            <div class="kpi-label">Agencias Activas</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-number">Q62,480</div>
+            <div class="kpi-label">Inversión Total</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-number">58%</div>
+            <div class="kpi-label">Efectividad Promedio</div>
+        </div>
+    </div>
+
+    <div class="charts-section">
+        <div class="charts-row">
+            <div class="chart-box">
+                <div class="chart-title">Comparativa por Agencia - Leads</div>
+                <canvas id="chart-general-leads" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Comparativa por Agencia - Hipotecarios</div>
+                <canvas id="chart-general-hipotecarios" class="chart-canvas"></canvas>
+            </div>
+        </div>
+        <div class="charts-row">
+            <div class="chart-box">
+                <div class="chart-title">Ranking de Conversaciones</div>
+                <canvas id="chart-general-conversaciones" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-box">
+<div class="chart-title">Análisis de Eficiencia por Q1,000</div>
+                <canvas id="chart-general-eficiencia" class="chart-canvas"></canvas>
+            </div>
+        </div>
+        <div class="charts-row">
+            <div class="chart-box full-width-chart">
+                <div class="chart-title">Dashboard Consolidado - Todas las Métricas</div>
+                <canvas id="chart-general-consolidado" class="chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="ranking-section" style="margin-top: 30px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+            
+            <div class="ranking-box" style="background: linear-gradient(135deg, #4CAF50 0%, rgba(76, 175, 80, 0.1) 100%); padding: 20px; border-radius: 15px; border-left: 4px solid #4CAF50;">
+                <h3 style="color: #4CAF50; margin-bottom: 15px; text-align: center;">🏆 LÍDERES</h3>
+                <div style="margin-bottom: 10px;">
+                    <strong>Leads:</strong> <span style="color: #4CAF50;">Central (1,948)</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Hipotecarios:</strong> <span style="color: #4CAF50;">Central (97)</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Conversaciones:</strong> <span style="color: #4CAF50;">4 Caminos (919)</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>CPR Más Bajo:</strong> <span style="color: #4CAF50;">4 Caminos (Q11.65)</span>
+                </div>
+            </div>
+
+            <div class="ranking-box" style="background: linear-gradient(135deg, #FF9800 0%, rgba(255, 152, 0, 0.1) 100%); padding: 20px; border-radius: 15px; border-left: 4px solid #FF9800;">
+                <h3 style="color: #FF9800; margin-bottom: 15px; text-align: center;">⚠️ ÁREAS DE MEJORA</h3>
+                <div style="margin-bottom: 10px;">
+                    <strong>Leads:</strong> <span style="color: #FF9800;">Mazatenango, Petén, 4 Caminos (0)</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Hipotecarios:</strong> <span style="color: #FF9800;">4 Caminos (6)</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Conversaciones:</strong> <span style="color: #FF9800;">Escuintla (438)</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>CPR Más Alto:</strong> <span style="color: #FF9800;">Cobán (Q24.64)</span>
+                </div>
+            </div>
+
+            <div class="ranking-box" style="background: linear-gradient(135deg, #2196F3 0%, rgba(33, 150, 243, 0.1) 100%); padding: 20px; border-radius: 15px; border-left: 4px solid #2196F3;">
+                <h3 style="color: #2196F3; margin-bottom: 15px; text-align: center;">📊 PROMEDIO GENERAL</h3>
+                <div style="margin-bottom: 10px;">
+                    <strong>Leads por Agencia:</strong> <span style="color: #2196F3;">370</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Hipotecarios por Agencia:</strong> <span style="color: #2196F3;">56</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Conversaciones por Agencia:</strong> <span style="color: #2196F3;">639</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>CPR Promedio:</strong> <span style="color: #2196F3;">Q17.47</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="data-tables" style="margin-top: 30px;">
+        <div class="data-table">
+            <div class="table-title">Ranking Completo por Agencia</div>
+            <table id="table-general-ranking"></table>
+        </div>
+        <div class="data-table">
+            <div class="table-title">Métricas de Eficiencia</div>
+            <table id="table-general-eficiencia"></table>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN GENERAL Q3 -->
+<div class="content-area" id="content-general-q3">
+    <h2>📊 General Q3 - Dashboard </h2>
+    
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-number">3,369</div>
+            <div class="kpi-label">Total Mensajes</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-number">38</div>
+            <div class="kpi-label">Total Oportunidades</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-number">200</div>
+            <div class="kpi-label">Total Hipotecarios</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-number">6</div>
+            <div class="kpi-label">Agencias Activas</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-number">Q44,152</div>
+            <div class="kpi-label">Inversión Total</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-number">12</div>
+            <div class="kpi-label">Total Desembolsos</div>
+        </div>
+    </div>
+
+    <div class="charts-section">
+        <div class="charts-row">
+            <div class="chart-box">
+                <div class="chart-title">Comparativa por Agencia - Oportunidades</div>
+                <canvas id="chart-general-leads-q3" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Comparativa por Agencia - Hipotecarios</div>
+                <canvas id="chart-general-hipotecarios-q3" class="chart-canvas"></canvas>
+            </div>
+        </div>
+        <div class="charts-row">
+            <div class="chart-box">
+                <div class="chart-title">Ranking de Mensajes</div>
+                <canvas id="chart-general-conversaciones-q3" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">Análisis de Eficiencia por Q1,000</div>
+                <canvas id="chart-general-eficiencia-q3" class="chart-canvas"></canvas>
+            </div>
+        </div>
+        <div class="charts-row">
+            <div class="chart-box full-width-chart">
+                <div class="chart-title">Dashboard Consolidado Q3 - Todas las Métricas</div>
+                <canvas id="chart-general-consolidado-q3" class="chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="ranking-section" style="margin-top: 30px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+            <div class="ranking-box" style="background: linear-gradient(135deg, #4CAF50 0%, rgba(76, 175, 80, 0.1) 100%); padding: 20px; border-radius: 15px; border-left: 4px solid #4CAF50;">
+                <h3 style="color: #4CAF50; margin-bottom: 15px; text-align: center;">🏆 TOP PERFORMERS Q3</h3>
+                <div style="margin-bottom: 10px;">
+                    <strong>Más Mensajes:</strong> <span style="color: #4CAF50;">Central (2,096)</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Más Oportunidades:</strong> <span style="color: #4CAF50;">Central (17)</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Más Hipotecarios:</strong> <span style="color: #4CAF50;">Central (164)</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Mayor Inversión:</strong> <span style="color: #4CAF50;">Central (Q20,338)</span>
+                </div>
+            </div>
+
+            <div class="ranking-box" style="background: linear-gradient(135deg, #FF9800 0%, rgba(255, 152, 0, 0.1) 100%); padding: 20px; border-radius: 15px; border-left: 4px solid #FF9800;">
+                <h3 style="color: #FF9800; margin-bottom: 15px; text-align: center;">📈 EFICIENCIA Q3</h3>
+                <div style="margin-bottom: 10px;">
+                    <strong>Mejor ROI Hipotecarios:</strong> <span style="color: #FF9800;">Central</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Mejor Relación Mensaje/Q:</strong> <span style="color: #FF9800;">Cobán</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Más Desembolsos:</strong> <span style="color: #FF9800;">Central (8)</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Mayor Monto:</strong> <span style="color: #FF9800;">Central (Q725,000)</span>
+                </div>
+            </div>
+
+            <div class="ranking-box" style="background: linear-gradient(135deg, #2196F3 0%, rgba(33, 150, 243, 0.1) 100%); padding: 20px; border-radius: 15px; border-left: 4px solid #2196F3;">
+                <h3 style="color: #2196F3; margin-bottom: 15px; text-align: center;">📊 PROMEDIO Q3</h3>
+                <div style="margin-bottom: 10px;">
+                    <strong>Oportunidades por Agencia:</strong> <span style="color: #2196F3;">6.3</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Hipotecarios por Agencia:</strong> <span style="color: #2196F3;">33.3</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Mensajes por Agencia:</strong> <span style="color: #2196F3;">561.5</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Inversión Promedio:</strong> <span style="color: #2196F3;">Q7,359</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="data-tables" style="margin-top: 30px;">
+        <div class="data-table">
+            <div class="table-title">Ranking Q3 por Agencia</div>
+            <table id="table-general-ranking-q3"></table>
+        </div>
+        <div class="data-table">
+            <div class="table-title">Métricas de Eficiencia Q3</div>
+            <table id="table-general-eficiencia-q3"></table>
+        </div>
+    </div>
+</div>
+    </div>
+
+    <script>
+        // Datos procesados del Excel - Q2
+        const coopexpressDataQ2 = {
+            
+            
+            coban: {
+                name: 'Cobán',
+                totales: { conversaciones: 449, leads: 113, hipotecarios: 73, alcance: 661653, impresiones: 1908073, importe: 13264.12, cprPromedio: 24.64 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 73 },
+                dailyData: [
+                    { fecha: '2025-08-01', conversaciones: 41, leads: 6, hipotecario: 3, cpr: 20.40, importe: 958.71 },
+                    { fecha: '2025-08-02', conversaciones: 30, leads: 5, hipotecario: 1, cpr: 24.42, importe: 854.53 },
+                    { fecha: '2025-08-03', conversaciones: 24, leads: 5, hipotecario: 1, cpr: 37.63, importe: 1091.20 },
+                    { fecha: '2025-08-04', conversaciones: 45, leads: 17, hipotecario: 5, cpr: 18.02, importe: 1117.11 },
+                    { fecha: '2025-08-05', conversaciones: 53, leads: 13, hipotecario: 4, cpr: 18.27, importe: 1205.62 },
+                    { fecha: '2025-08-06', conversaciones: 30, leads: 9, hipotecario: 3, cpr: 30.36, importe: 1184.15 },
+                    { fecha: '2025-08-07', conversaciones: 37, leads: 14, hipotecario: 17, cpr: 22.66, importe: 1155.57 },
+                    { fecha: '2025-08-08', conversaciones: 43, leads: 8, hipotecario: 16, cpr: 21.96, importe: 1119.79 },
+                    { fecha: '2025-08-09', conversaciones: 27, leads: 6, hipotecario: 4, cpr: 29.53, importe: 974.42 },
+                    { fecha: '2025-08-10', conversaciones: 45, leads: 10, hipotecario: 0, cpr: 23.78, importe: 1307.95 },
+                    { fecha: '2025-08-11', conversaciones: 40, leads: 10, hipotecario: 14, cpr: 25.24, importe: 1261.88 },
+                    { fecha: '2025-08-12', conversaciones: 34, leads: 10, hipotecario: 5, cpr: 23.48, importe: 1033.19 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', conversaciones: 260, leads: 69, hipotecarios: 39, importe: 7566.89 },
+                    { semana: 'Semana 2', conversaciones: 189, leads: 44, hipotecarios: 34, importe: 5697.23 }
+                ]
+            },
+            escuintla: {
+                name: 'Escuintla',
+                totales: { conversaciones: 438, leads: 80, hipotecarios: 21, alcance: 612121, impresiones: 823257, importe: 9505.33, cprPromedio: 19.09 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 21 },
+                dailyData: [
+                    { fecha: '2025-08-01', conversaciones: 42, leads: 1, hipotecario: 0, cpr: 16.12, importe: 692.96 },
+                    { fecha: '2025-08-02', conversaciones: 34, leads: 0, hipotecario: 0, cpr: 19.45, importe: 661.41 },
+                    { fecha: '2025-08-03', conversaciones: 44, leads: 0, hipotecario: 0, cpr: 18.76, importe: 825.44 },
+                    { fecha: '2025-08-04', conversaciones: 53, leads: 0, hipotecario: 0, cpr: 14.82, importe: 785.33 },
+                    { fecha: '2025-08-05', conversaciones: 24, leads: 0, hipotecario: 0, cpr: 30.20, importe: 724.81 },
+                    { fecha: '2025-08-06', conversaciones: 40, leads: 12, hipotecario: 3, cpr: 17.39, importe: 904.09 },
+                    { fecha: '2025-08-07', conversaciones: 41, leads: 12, hipotecario: 9, cpr: 17.06, importe: 904.21 },
+                    { fecha: '2025-08-08', conversaciones: 39, leads: 19, hipotecario: 2, cpr: 16.21, importe: 940.37 },
+                    { fecha: '2025-08-09', conversaciones: 35, leads: 8, hipotecario: 0, cpr: 21.66, importe: 931.17 },
+                    { fecha: '2025-08-10', conversaciones: 35, leads: 13, hipotecario: 2, cpr: 21.89, importe: 1050.81 },
+                    { fecha: '2025-08-11', conversaciones: 51, leads: 15, hipotecario: 5, cpr: 16.44, importe: 1084.73 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', conversaciones: 278, leads: 25, hipotecarios: 3, importe: 5498.25 },
+                    { semana: 'Semana 2', conversaciones: 160, leads: 55, hipotecarios: 18, importe: 4007.08 }
+                ]
+            },
+            mazatenango: {
+                name: 'Mazatenango',
+                totales: { conversaciones: 520, leads: 0, hipotecarios: 92, alcance: 812792, impresiones: 1043929, importe: 8820.48, cprPromedio: 16.17 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 92 },
+                dailyData: [
+                    { fecha: '2025-08-01', conversaciones: 72, leads: 0, hipotecario: 22, cpr: 15.58, importe: 1121.79 },
+                    { fecha: '2025-08-02', conversaciones: 46, leads: 0, hipotecario: 0, cpr: 22.33, importe: 1027.27 },
+                    { fecha: '2025-08-03', conversaciones: 53, leads: 0, hipotecario: 8, cpr: 17.12, importe: 907.45 },
+                    { fecha: '2025-08-05', conversaciones: 1, leads: 0, hipotecario: 7, cpr: 3.55, importe: 3.55 },
+                    { fecha: '2025-08-06', conversaciones: 71, leads: 0, hipotecario: 17, cpr: 12.54, importe: 890.15 },
+                    { fecha: '2025-08-07', conversaciones: 60, leads: 0, hipotecario: 8, cpr: 15.10, importe: 905.85 },
+                    { fecha: '2025-08-08', conversaciones: 45, leads: 0, hipotecario: 10, cpr: 22.06, importe: 992.50 },
+                    { fecha: '2025-08-09', conversaciones: 46, leads: 0, hipotecario: 7, cpr: 19.64, importe: 903.28 },
+                    { fecha: '2025-08-10', conversaciones: 51, leads: 0, hipotecario: 3, cpr: 19.45, importe: 991.93 },
+                    { fecha: '2025-08-11', conversaciones: 75, leads: 0, hipotecario: 10, cpr: 14.36, importe: 1076.71 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', conversaciones: 303, leads: 0, hipotecarios: 54, importe: 4856.06 },
+                    { semana: 'Semana 2', conversaciones: 217, leads: 0, hipotecarios: 38, importe: 3964.42 }
+                ]
+            },
+            peten: {
+                name: 'Petén',
+                totales: { conversaciones: 507, leads: 0, hipotecarios: 43, alcance: 883722, impresiones: 1073329, importe: 9486.76, cprPromedio: 19.17 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 43 },
+                dailyData: [
+                    { fecha: '2025-08-01', conversaciones: 64, leads: 0, hipotecario: 2, cpr: 17.79, importe: 1138.48 },
+                    { fecha: '2025-08-02', conversaciones: 48, leads: 0, hipotecario: 0, cpr: 21.22, importe: 1018.57 },
+                    { fecha: '2025-08-03', conversaciones: 44, leads: 0, hipotecario: 3, cpr: 20.75, importe: 913.00 },
+                    { fecha: '2025-08-05', conversaciones: 31, leads: 0, hipotecario: 6, cpr: 24.29, importe: 752.91 },
+                    { fecha: '2025-08-06', conversaciones: 56, leads: 0, hipotecario: 7, cpr: 17.12, importe: 958.68 },
+                    { fecha: '2025-08-07', conversaciones: 65, leads: 0, hipotecario: 5, cpr: 14.51, importe: 943.43 },
+                    { fecha: '2025-08-08', conversaciones: 50, leads: 0, hipotecario: 6, cpr: 18.84, importe: 941.84 },
+                    { fecha: '2025-08-09', conversaciones: 42, leads: 0, hipotecario: 4, cpr: 20.64, importe: 866.93 },
+                    { fecha: '2025-08-10', conversaciones: 52, leads: 0, hipotecario: 4, cpr: 18.45, importe: 959.30 },
+                    { fecha: '2025-08-11', conversaciones: 55, leads: 0, hipotecario: 6, cpr: 18.07, importe: 993.62 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', conversaciones: 308, leads: 0, hipotecarios: 23, importe: 5725.07 },
+                    { semana: 'Semana 2', conversaciones: 199, leads: 0, hipotecarios: 20, importe: 3761.69 }
+                ]
+            },
+            cuatrocaminos: {
+                name: '4 Caminos',
+                totales: { conversaciones: 919, leads: 0, hipotecarios: 6, alcance: 968488, impresiones: 1268719, importe: 10614.85, cprPromedio: 11.65 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 6 },
+                dailyData: [
+                    { fecha: '2025-08-01', conversaciones: 85, leads: 0, hipotecario: 0, cpr: 11.40, importe: 968.71 },
+                    { fecha: '2025-08-02', conversaciones: 77, leads: 0, hipotecario: 0, cpr: 11.64, importe: 896.49 },
+                    { fecha: '2025-08-03', conversaciones: 69, leads: 0, hipotecario: 0, cpr: 13.89, importe: 958.62 },
+                    { fecha: '2025-08-04', conversaciones: 84, leads: 0, hipotecario: 1, cpr: 11.12, importe: 934.07 },
+                    { fecha: '2025-08-05', conversaciones: 85, leads: 0, hipotecario: 0, cpr: 10.15, importe: 863.07 },
+                    { fecha: '2025-08-06', conversaciones: 99, leads: 0, hipotecario: 0, cpr: 9.48, importe: 938.72 },
+                    { fecha: '2025-08-07', conversaciones: 90, leads: 0, hipotecario: 1, cpr: 10.64, importe: 957.84 },
+                    { fecha: '2025-08-08', conversaciones: 73, leads: 0, hipotecario: 2, cpr: 14.01, importe: 1022.99 },
+                    { fecha: '2025-08-09', conversaciones: 81, leads: 0, hipotecario: 0, cpr: 11.28, importe: 913.29 },
+                    { fecha: '2025-08-10', conversaciones: 85, leads: 0, hipotecario: 1, cpr: 12.26, importe: 1042.50 },
+                    { fecha: '2025-08-11', conversaciones: 91, leads: 0, hipotecario: 1, cpr: 12.29, importe: 1118.55 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', conversaciones: 589, leads: 0, hipotecarios: 4, importe: 6517.52 },
+                    { semana: 'Semana 2', conversaciones: 330, leads: 0, hipotecarios: 2, importe: 4097.33 }
+                ]
+            },
+            central: {
+    name: 'Central',
+    totales: { 
+        conversaciones: 675, 
+        leads: 1948, 
+        hipotecarios: 97, 
+        alcance: 850000, 
+        impresiones: 1200000, 
+        importe: 11251.01, 
+        cprPromedio: 12.26 
+    },
+    hipotecariosPorMedio: { 'Digital/Web': 97 },
+    dailyData: [
+        { fecha: '2025-08-01', conversaciones: 68, leads: 187, hipotecario: 16, cpr: 23.72, importe: 1612.84 },
+        { fecha: '2025-08-02', conversaciones: 101, leads: 317, hipotecario: 15, cpr: 17.56, importe: 1773.84 },
+        { fecha: '2025-08-03', conversaciones: 75, leads: 352, hipotecario: 16, cpr: 17.53, importe: 1314.38 },
+        { fecha: '2025-08-04', conversaciones: 80, leads: 327, hipotecario: 15, cpr: 15.45, importe: 1236.15 },
+        { fecha: '2025-08-05', conversaciones: 80, leads: 372, hipotecario: 5, cpr: 15.30, importe: 1223.77 },
+        { fecha: '2025-08-06', conversaciones: 87, leads: 0, hipotecario: 0, cpr: 14.71, importe: 1279.95 },
+        { fecha: '2025-08-07', conversaciones: 88, leads: 0, hipotecario: 0, cpr: 16.37, importe: 1440.30 },
+        { fecha: '2025-08-08', conversaciones: 96, leads: 366, hipotecario: 15, cpr: 14.27, importe: 1369.78 }
+    ],
+    weeklyData: [
+        { semana: 'Semana 1', conversaciones: 411, leads: 1355, hipotecarios: 67, importe: 8640.93 },
+        { semana: 'Semana 2', conversaciones: 264, leads: 593, hipotecarios: 30, importe: 2610.08 }
+    ]
+},
+general: {
+    name: 'General',
+    agencias: [
+        { nombre: 'Central', conversaciones: 675, leads: 1948, hipotecarios: 97, importe: 11251.01, cpr: 12.26 },
+        { nombre: 'Cobán', conversaciones: 449, leads: 113, hipotecarios: 73, importe: 13264.12, cpr: 24.64 },
+        { nombre: 'Escuintla', conversaciones: 438, leads: 80, hipotecarios: 21, importe: 9505.33, cpr: 19.09 },
+        { nombre: 'Mazatenango', conversaciones: 520, leads: 0, hipotecarios: 92, importe: 8820.48, cpr: 16.17 },
+        { nombre: 'Petén', conversaciones: 507, leads: 0, hipotecarios: 43, importe: 9486.76, cpr: 19.17 },
+        { nombre: '4 Caminos', conversaciones: 919, leads: 0, hipotecarios: 6, importe: 10614.85, cpr: 11.65 }
+    ],
+    totales: {
+        conversaciones: 3508,
+        leads: 2141,
+        hipotecarios: 332,
+        importe: 62942.55
+    }
+}
+
+            
+
+            
+        };
+
+        // Variables para gráficas
+        let currentCharts = {};
+
+        function destroyExistingCharts() {
+            Object.values(currentCharts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            currentCharts = {};
+        }
+
+const chartConfig = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            labels: {
+                color: '#ff6b1a',
+                font: { size: 12, weight: 'bold' }
+            }
+        },
+        tooltip: {
+            enabled: true,
+            backgroundColor: 'rgba(255, 107, 26, 0.9)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: '#ff6b1a',
+            borderWidth: 2,
+            cornerRadius: 8,
+            displayColors: true,
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 13 },
+            padding: 12,
+            callbacks: {
+                title: function(context) {
+                    return context[0].label || 'Información';
+                },
+                label: function(context) {
+                    let label = context.dataset.label || '';
+                    if (label) {
+                        label += ': ';
+                    }
+                    if (context.parsed.y !== null) {
+                        if (label.includes('CPR') || label.includes('Importe')) {
+                            label += 'Q' + context.parsed.y.toLocaleString();
+                        } else {
+                            label += context.parsed.y.toLocaleString();
+                        }
+                    }
+                    return label;
+                }
+            }
+        }
+    },
+}
+
+        // Datos Q3 - Nuevos datos
+        const coopexpressDataQ3 = {
+            general: {
+                name: 'General Q3',
+                agencias: [
+                    { nombre: 'Central', mensajes: 2096, oportunidades: 17, hipotecarios: 164, importe: 20338, desembolsos: 8, cantidadDesembolsos: 725000 },
+                    { nombre: 'Cobán', mensajes: 488, oportunidades: 12, hipotecarios: 13, importe: 5050, desembolsos: 1, cantidadDesembolsos: 100000 },
+                    { nombre: 'Escuintla', mensajes: 347, oportunidades: 2, hipotecarios: 9, importe: 4794, desembolsos: 1, cantidadDesembolsos: 60000 },
+                    { nombre: 'Mazatenango', mensajes: 149, oportunidades: 2, hipotecarios: 4, importe: 4566, desembolsos: 1, cantidadDesembolsos: 70000 },
+                    { nombre: 'Petén', mensajes: 171, oportunidades: 2, hipotecarios: 3, importe: 4599, desembolsos: 1, cantidadDesembolsos: 75000 },
+                    { nombre: '4 Caminos', mensajes: 118, oportunidades: 3, hipotecarios: 7, importe: 4805, desembolsos: 0, cantidadDesembolsos: 0 }
+                ]
+            },
+            central: {
+                name: 'Central Q3',
+                totales: { mensajes: 2096, oportunidades: 17, hipotecarios: 164, importe: 20338, desembolsos: 8, cantidadDesembolsos: 725000 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 164 },
+                dailyData: [
+                    // Datos simulados para Q3 - puedes actualizarlos con datos reales
+                    { fecha: '2025-09-01', mensajes: 85, oportunidades: 2, hipotecario: 8, importe: 1100 },
+                    { fecha: '2025-09-02', mensajes: 92, oportunidades: 3, hipotecario: 12, importe: 1250 },
+                    { fecha: '2025-09-03', mensajes: 78, oportunidades: 1, hipotecario: 15, importe: 980 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', mensajes: 850, oportunidades: 7, hipotecarios: 65, importe: 8200 },
+                    { semana: 'Semana 2', mensajes: 1246, oportunidades: 10, hipotecarios: 99, importe: 12138 }
+                ]
+            },
+            coban: {
+                name: 'Cobán Q3',
+                totales: { mensajes: 488, oportunidades: 12, hipotecarios: 13, importe: 5050, desembolsos: 1, cantidadDesembolsos: 100000 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 13 },
+                dailyData: [
+                    { fecha: '2025-09-01', mensajes: 25, oportunidades: 1, hipotecario: 1, importe: 280 },
+                    { fecha: '2025-09-02', mensajes: 32, oportunidades: 2, hipotecario: 2, importe: 350 },
+                    { fecha: '2025-09-03', mensajes: 28, oportunidades: 1, hipotecario: 1, importe: 290 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', mensajes: 200, oportunidades: 5, hipotecarios: 6, importe: 2100 },
+                    { semana: 'Semana 2', mensajes: 288, oportunidades: 7, hipotecarios: 7, importe: 2950 }
+                ]
+            },
+            escuintla: {
+                name: 'Escuintla Q3',
+                totales: { mensajes: 347, oportunidades: 2, hipotecarios: 9, importe: 4794, desembolsos: 1, cantidadDesembolsos: 60000 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 9 },
+                dailyData: [
+                    { fecha: '2025-09-01', mensajes: 18, oportunidades: 0, hipotecario: 1, importe: 250 },
+                    { fecha: '2025-09-02', mensajes: 22, oportunidades: 1, hipotecario: 1, importe: 320 },
+                    { fecha: '2025-09-03', mensajes: 19, oportunidades: 0, hipotecario: 0, importe: 280 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', mensajes: 145, oportunidades: 1, hipotecarios: 4, importe: 2000 },
+                    { semana: 'Semana 2', mensajes: 202, oportunidades: 1, hipotecarios: 5, importe: 2794 }
+                ]
+            },
+            mazatenango: {
+                name: 'Mazatenango Q3',
+                totales: { mensajes: 149, oportunidades: 2, hipotecarios: 4, importe: 4566, desembolsos: 1, cantidadDesembolsos: 70000 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 4 },
+                dailyData: [
+                    { fecha: '2025-09-01', mensajes: 8, oportunidades: 0, hipotecario: 0, importe: 200 },
+                    { fecha: '2025-09-02', mensajes: 12, oportunidades: 1, hipotecario: 1, importe: 280 },
+                    { fecha: '2025-09-03', mensajes: 10, oportunidades: 0, hipotecario: 0, importe: 230 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', mensajes: 60, oportunidades: 1, hipotecarios: 2, importe: 1800 },
+                    { semana: 'Semana 2', mensajes: 89, oportunidades: 1, hipotecarios: 2, importe: 2766 }
+                ]
+            },
+            peten: {
+                name: 'Petén Q3',
+                totales: { mensajes: 171, oportunidades: 2, hipotecarios: 3, importe: 4599, desembolsos: 1, cantidadDesembolsos: 75000 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 3 },
+                dailyData: [
+                    { fecha: '2025-09-01', mensajes: 9, oportunidades: 0, hipotecario: 0, importe: 240 },
+                    { fecha: '2025-09-02', mensajes: 14, oportunidades: 1, hipotecario: 1, importe: 310 },
+                    { fecha: '2025-09-03', mensajes: 11, oportunidades: 0, hipotecario: 0, importe: 260 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', mensajes: 70, oportunidades: 1, hipotecarios: 1, importe: 1900 },
+                    { semana: 'Semana 2', mensajes: 101, oportunidades: 1, hipotecarios: 2, importe: 2699 }
+                ]
+            },
+            cuatrocaminos: {
+                name: '4 Caminos Q3',
+                totales: { mensajes: 118, oportunidades: 3, hipotecarios: 7, importe: 4805, desembolsos: 0, cantidadDesembolsos: 0 },
+                hipotecariosPorMedio: { 'WA CoopeXpress 9799': 7 },
+                dailyData: [
+                    { fecha: '2025-09-01', mensajes: 6, oportunidades: 0, hipotecario: 1, importe: 200 },
+                    { fecha: '2025-09-02', mensajes: 8, oportunidades: 1, hipotecario: 1, importe: 250 },
+                    { fecha: '2025-09-03', mensajes: 7, oportunidades: 0, hipotecario: 0, importe: 220 }
+                ],
+                weeklyData: [
+                    { semana: 'Semana 1', mensajes: 50, oportunidades: 1, hipotecarios: 3, importe: 2000 },
+                    { semana: 'Semana 2', mensajes: 68, oportunidades: 2, hipotecarios: 4, importe: 2805 }
+                ]
+            }
+        };
+
+        // Variable para controlar qué trimestre mostrar
+        let currentTrimestre = 'q2';
+        
+        // Función para obtener datos según trimestre
+        function getCurrentData() {
+            return currentTrimestre === 'q2' ? coopexpressDataQ2 : coopexpressDataQ3;
+        }
+
+        // Función helper para obtener campos correctos según trimestre
+        function getFieldNames() {
+            if (currentTrimestre === 'q2') {
+                return {
+                    messages: 'conversaciones',
+                    opportunities: 'leads',
+                    mortgages: 'hipotecarios',
+                    amount: 'importe'
+                };
+            } else {
+                return {
+                    messages: 'mensajes',
+                    opportunities: 'oportunidades', 
+                    mortgages: 'hipotecarios',
+                    amount: 'importe'
+                };
+            }
+        }
+
+        const colors = {
+            primary: '#ff6b1a',
+            secondary: '#ff8c42',
+            accent: '#ffb976',
+            success: '#4CAF50',
+            warning: '#FFC107'
+        };
+
+        // Crear tablas de datos
+        function createDataTable(tableId, headers, data) {
+            const table = document.getElementById(tableId);
+            table.innerHTML = '';
+            
+            // Headers
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            
+            // Data rows
+            const tbody = table.createTBody();
+            data.forEach(row => {
+                const tr = tbody.insertRow();
+                Object.values(row).forEach(value => {
+                    const td = tr.insertCell();
+                    td.textContent = value;
+                });
+            });
+        }
+
+// Crear gráficas por sede
+function createChartsForSede(sede) {
+    destroyExistingCharts();
+    
+    // Caso especial para General
+    if (sede === 'general') {
+        createGeneralCharts();
+        return;
+    }
+    
+    // Para todas las demás sedes
+    const data = getCurrentData()[sede];
+    if (!data) return;
+
+    // Gráfica de conversaciones diarias
+    const dailyCtx = document.getElementById(`chart-${sede}-daily`).getContext('2d');
+    currentCharts.daily = new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+            labels: data.dailyData.map(d => d.fecha.split('-')[2]),
+            datasets: [{
+                label: 'Conversaciones',
+                data: data.dailyData.map(d => d.conversaciones),
+                borderColor: colors.primary,
+                backgroundColor: 'rgba(255, 107, 26, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: chartConfig
+    });
+
+    // Gráfica de conversión (solo para sedes con leads)
+    if (data.totales.leads > 0) {
+        const convCtx = document.getElementById(`chart-${sede}-conversion`).getContext('2d');
+        currentCharts.conversion = new Chart(convCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Leads', 'Conversaciones sin Lead'],
+                datasets: [{
+                    data: [data.totales.leads, data.totales.conversaciones - data.totales.leads],
+                    backgroundColor: [colors.success, colors.accent],
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: { ...chartConfig, scales: undefined }
+        });
+    } else {
+        // Gráfica de CPR para sedes sin leads
+        const cprCtx = document.getElementById(`chart-${sede}-cpr`).getContext('2d');
+        currentCharts.cpr = new Chart(cprCtx, {
+            type: 'bar',
+            data: {
+                labels: data.dailyData.map(d => d.fecha.split('-')[2]),
+                datasets: [{
+                    label: 'CPR (Q)',
+                    data: data.dailyData.map(d => d.cpr),
+                    backgroundColor: colors.warning,
+                    borderRadius: 8
+                }]
+            },
+            options: chartConfig
+        });
+    }
+
+    // Gráfica semanal
+    const weeklyCtx = document.getElementById(`chart-${sede}-weekly`).getContext('2d');
+    currentCharts.weekly = new Chart(weeklyCtx, {
+        type: 'bar',
+        data: {
+            labels: data.weeklyData.map(d => d.semana),
+            datasets: [{
+                label: 'Conversaciones',
+                data: data.weeklyData.map(d => d.conversaciones),
+                backgroundColor: colors.primary,
+                yAxisID: 'y'
+            }, {
+                label: 'Hipotecarios',
+                data: data.weeklyData.map(d => d.hipotecarios),
+                backgroundColor: colors.success,
+                yAxisID: 'y'
+            }, {
+                label: 'Importe (Q)',
+                data: data.weeklyData.map(d => d.importe),
+                type: 'line',
+                borderColor: colors.warning,
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                yAxisID: 'y1',
+                fill: false
+            }]
+        },
+        options: {
+            ...chartConfig,
+            scales: {
+                ...chartConfig.scales,
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    ticks: { color: '#666' },
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        }
+    });
+
+    // Crear tablas
+    createDataTable(`table-${sede}-daily`, 
+        ['Fecha', 'Conv', 'Leads', 'Hip', 'CPR', 'Importe'],
+        data.dailyData.map(d => ({
+            fecha: d.fecha,
+            conv: d.conversaciones,
+            leads: d.leads,
+            hip: d.hipotecario,
+            cpr: `Q${d.cpr.toFixed(2)}`,
+            importe: `Q${d.importe.toFixed(2)}`
+        }))
+    );
+
+    createDataTable(`table-${sede}-weekly`,
+        ['Semana', 'Conv', 'Leads', 'Hip', 'Importe'],
+        data.weeklyData.map(d => ({
+            semana: d.semana,
+            conv: d.conversaciones,
+            leads: d.leads,
+            hip: d.hipotecarios,
+            importe: `Q${d.importe.toFixed(2)}`
+        }))
+    );
+}
+
+// Función separada para las gráficas de General
+function createGeneralCharts() {
+    const agencias = getCurrentData().general.agencias;
+    const fields = getFieldNames();
+    
+    // Determinar sufijo para IDs según trimestre
+    const suffix = currentTrimestre === 'q3' ? '-q3' : '';
+    
+    // Gráfica de oportunidades/leads por agencia
+    const leadsCtx = document.getElementById(`chart-general-leads${suffix}`).getContext('2d');
+    currentCharts.leads = new Chart(leadsCtx, {
+        type: 'bar',
+        data: {
+            labels: agencias.map(a => a.nombre),
+            datasets: [{
+                label: currentTrimestre === 'q2' ? 'Leads' : 'Oportunidades',
+                data: agencias.map(a => a[fields.opportunities]),
+                backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#607D8B'],
+                borderRadius: 8
+            }]
+        },
+        options: chartConfig
+    });
+
+    // Gráfica de hipotecarios por agencia
+    const hipCtx = document.getElementById(`chart-general-hipotecarios${suffix}`).getContext('2d');
+    currentCharts.hipotecarios = new Chart(hipCtx, {
+        type: 'doughnut',
+        data: {
+            labels: agencias.map(a => a.nombre),
+            datasets: [{
+                data: agencias.map(a => a[fields.mortgages]),
+                backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#607D8B'],
+                borderWidth: 3,
+                borderColor: '#fff'
+            }]
+        },
+        options: { ...chartConfig, scales: undefined }
+    });
+
+    // Gráfica de mensajes/conversaciones por agencia
+    const convCtx = document.getElementById(`chart-general-conversaciones${suffix}`).getContext('2d');
+    currentCharts.conversaciones = new Chart(convCtx, {
+        type: 'bar',
+        data: {
+            labels: agencias.map(a => a.nombre),
+            datasets: [{
+                label: currentTrimestre === 'q2' ? 'Conversaciones' : 'Mensajes',
+                data: agencias.map(a => a[fields.messages]),
+                backgroundColor: colors.primary,
+                borderRadius: 8
+            }]
+        },
+        options: chartConfig
+    });
+
+    // Gráfica de análisis de eficiencia - líneas y área
+    const eficCtx = document.getElementById(`chart-general-eficiencia${suffix}`).getContext('2d');
+    currentCharts.eficiencia = new Chart(eficCtx, {
+        type: 'line',
+        data: {
+            labels: agencias.map(a => a.nombre),
+            datasets: [{
+                label: currentTrimestre === 'q2' ? 'Eficiencia de Leads (Leads/Q1000)' : 'Eficiencia de Oportunidades (Opor/Q1000)',
+                data: agencias.map(a => (a[fields.opportunities] / a[fields.amount] * 1000).toFixed(1)),
+                borderColor: '#4CAF50',
+                backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: '#4CAF50',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }, {
+                label: currentTrimestre === 'q2' ? 'Eficiencia de Conversaciones (Conv/Q1000)' : 'Eficiencia de Mensajes (Mens/Q1000)',
+                data: agencias.map(a => (a[fields.messages] / a[fields.amount] * 1000).toFixed(1)),
+                borderColor: '#FF9800',
+                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: '#FF9800',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }, {
+                label: 'ROI Hipotecarios (Hip/Q1000)',
+                data: agencias.map(a => (a[fields.mortgages] / a[fields.amount] * 1000).toFixed(1)),
+                borderColor: '#2196F3',
+                backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: '#2196F3',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            ...chartConfig,
+            scales: {
+                y: { 
+                    title: { 
+                        display: true, 
+                        text: 'Eficiencia (por cada Q1,000 invertidos)',
+                        color: '#666',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 107, 26, 0.1)' }
+                },
+                x: { 
+                    title: { 
+                        display: true, 
+                        text: 'Agencias',
+                        color: '#666',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    grid: { color: 'rgba(255, 107, 26, 0.05)' }
+                }
+            }
+        }
+    });
+
+    // Gráfica consolidada
+    const consolidadoCtx = document.getElementById(`chart-general-consolidado${suffix}`).getContext('2d');
+    currentCharts.consolidado = new Chart(consolidadoCtx, {
+        type: 'bar',
+        data: {
+            labels: agencias.map(a => a.nombre),
+            datasets: [{
+                label: currentTrimestre === 'q2' ? 'Conversaciones' : 'Mensajes',
+                data: agencias.map(a => a[fields.messages]),
+                backgroundColor: colors.primary,
+                yAxisID: 'y'
+            }, {
+                label: currentTrimestre === 'q2' ? 'Leads' : 'Oportunidades',
+                data: agencias.map(a => a[fields.opportunities]),
+                backgroundColor: colors.success,
+                yAxisID: 'y'
+            }, {
+                label: 'Hipotecarios',
+                data: agencias.map(a => a[fields.mortgages]),
+                backgroundColor: colors.warning,
+                yAxisID: 'y'
+            }]
+        },
+        options: chartConfig
+    });
+
+    // Crear tablas para General
+    const tableRankingSuffix = currentTrimestre === 'q3' ? '-q3' : '';
+    createDataTable(`table-general-ranking${tableRankingSuffix}`,
+        ['Agencia', currentTrimestre === 'q2' ? 'Conv' : 'Mens', currentTrimestre === 'q2' ? 'Leads' : 'Opor', 'Hip', 'Importe'],
+        agencias.map(a => ({
+            agencia: a.nombre,
+            messages: a[fields.messages],
+            opportunities: a[fields.opportunities],
+            hip: a[fields.mortgages],
+            importe: `Q${a[fields.amount].toLocaleString()}`
+        }))
+    );
+
+    createDataTable(`table-general-eficiencia${tableRankingSuffix}`,
+        ['Agencia', currentTrimestre === 'q2' ? 'Conv/Q' : 'Mens/Q', currentTrimestre === 'q2' ? 'Leads/Q' : 'Opor/Q', 'Hip/Q'],
+        agencias.map(a => ({
+            agencia: a.nombre,
+            messagesQ: (a[fields.messages] / a[fields.amount] * 1000).toFixed(2),
+            opportunitiesQ: (a[fields.opportunities] / a[fields.amount] * 1000).toFixed(2),
+            hipQ: (a[fields.mortgages] / a[fields.amount] * 1000).toFixed(2)
+        }))
+    );
+}
+
+        // Event listeners
+        const sedeCards = document.querySelectorAll('.sede-card');
+        const contentAreas = document.querySelectorAll('.content-area');
+        const welcomeMessage = document.getElementById('welcome');
+        const trimestreButtons = document.querySelectorAll('.trimestre-btn');
+
+        // Función para cambiar trimestre
+        function changeTrimestreView(trimestre) {
+            currentTrimestre = trimestre;
+            
+            // Actualizar botones
+            trimestreButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-trimestre') === trimestre) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Mostrar/ocultar tarjetas de sede según trimestre
+            sedeCards.forEach(card => {
+                const cardTrimestre = card.getAttribute('data-trimestre');
+                if (!cardTrimestre || cardTrimestre === 'general') {
+                    // Mostrar siempre las tarjetas generales
+                    card.style.display = 'block';
+                } else if (cardTrimestre === trimestre) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Resetear vista
+            welcomeMessage.style.display = 'block';
+            contentAreas.forEach(area => area.classList.remove('active'));
+            sedeCards.forEach(c => c.classList.remove('active'));
+            
+            // Limpiar gráficas actuales
+            Object.values(currentCharts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            currentCharts = {};
+        }
+
+        // Event listeners para botones de trimestre
+        trimestreButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const trimestre = this.getAttribute('data-trimestre');
+                changeTrimestreView(trimestre);
+            });
+        });
+
+        sedeCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const sedeData = this.getAttribute('data-sede');
+                const cardTrimestre = this.getAttribute('data-trimestre');
+                
+                // Solo procesar si es la tarjeta del trimestre actual o es general
+                if (!cardTrimestre || cardTrimestre === currentTrimestre || sedeData === 'general') {
+                    sedeCards.forEach(c => {
+                        const cTrimestre = c.getAttribute('data-trimestre');
+                        if (!cTrimestre || cTrimestre === currentTrimestre) {
+                            c.classList.remove('active');
+                        }
+                    });
+                    this.classList.add('active');
+                    
+                    welcomeMessage.style.display = 'none';
+                    
+                    contentAreas.forEach(area => area.classList.remove('active'));
+                    
+                    // Determinar el ID correcto según el trimestre
+                    let contentId = `content-${sedeData}`;
+                    if (currentTrimestre === 'q3') {
+                        contentId = `content-${sedeData}-q3`;
+                    }
+                    
+                    const targetContent = document.getElementById(contentId);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                        setTimeout(() => {
+                            createChartsForSede(sedeData);
+                        }, 100);
+                    }
+                }
+            });
+        });
+
+        // Animación inicial
+        window.addEventListener('load', function() {
+            // Inicializar vista con Q2
+            changeTrimestreView('q2');
+            
+            sedeCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(-30px)';
+                    card.style.transition = 'all 0.5s ease';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateX(0)';
+                    }, 100);
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
