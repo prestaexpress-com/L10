@@ -649,8 +649,9 @@
                         <canvas id="chart-mazatenango-daily" class="chart-canvas"></canvas>
                     </div>
                     <div class="chart-box">
-                        <div class="chart-title">CPR por Día</div>
-                        <canvas id="chart-mazatenango-cpr" class="chart-canvas"></canvas>
+                        <div class="chart-title" id="mazatenango-second-chart-title">Conversión de Oportunidades</div>
+                        <canvas id="chart-mazatenango-conversion" class="chart-canvas"></canvas>
+                        <canvas id="chart-mazatenango-cpr" class="chart-canvas" style="display:none;"></canvas>
                     </div>
                 </div>
                 <div class="charts-row">
@@ -723,8 +724,9 @@
                         <canvas id="chart-peten-daily" class="chart-canvas"></canvas>
                     </div>
                     <div class="chart-box">
-                        <div class="chart-title">CPR por Día</div>
-                        <canvas id="chart-peten-cpr" class="chart-canvas"></canvas>
+                        <div class="chart-title" id="peten-second-chart-title">Conversión de Oportunidades</div>
+                        <canvas id="chart-peten-conversion" class="chart-canvas"></canvas>
+                        <canvas id="chart-peten-cpr" class="chart-canvas" style="display:none;"></canvas>
                     </div>
                 </div>
                 <div class="charts-row">
@@ -797,8 +799,9 @@
 <canvas id="chart-cuatrocaminos-daily" class="chart-canvas"></canvas>
                     </div>
                     <div class="chart-box">
-                        <div class="chart-title">CPR por Día</div>
-<canvas id="chart-cuatrocaminos-cpr" class="chart-canvas"></canvas>
+                        <div class="chart-title" id="cuatrocaminos-second-chart-title">Conversión de Oportunidades</div>
+<canvas id="chart-cuatrocaminos-conversion" class="chart-canvas"></canvas>
+<canvas id="chart-cuatrocaminos-cpr" class="chart-canvas" style="display:none;"></canvas>
                     </div>
                 </div>
                 <div class="charts-row">
@@ -1439,7 +1442,16 @@ const chartConfig = {
                 dailyData: [
                     { fecha: '2025-09-01', mensajes: 8, oportunidades: 0, hipotecario: 0, importe: 200 },
                     { fecha: '2025-09-02', mensajes: 12, oportunidades: 1, hipotecario: 1, importe: 280 },
-                    { fecha: '2025-09-03', mensajes: 10, oportunidades: 0, hipotecario: 0, importe: 230 }
+                    { fecha: '2025-09-03', mensajes: 10, oportunidades: 0, hipotecario: 0, importe: 230 },
+                    { fecha: '2025-09-04', mensajes: 15, oportunidades: 0, hipotecario: 1, importe: 320 },
+                    { fecha: '2025-09-05', mensajes: 11, oportunidades: 1, hipotecario: 0, importe: 250 },
+                    { fecha: '2025-09-06', mensajes: 9, oportunidades: 0, hipotecario: 1, importe: 180 },
+                    { fecha: '2025-09-07', mensajes: 13, oportunidades: 0, hipotecario: 1, importe: 300 },
+                    { fecha: '2025-09-08', mensajes: 16, oportunidades: 0, hipotecario: 0, importe: 350 },
+                    { fecha: '2025-09-09', mensajes: 14, oportunidades: 0, hipotecario: 0, importe: 290 },
+                    { fecha: '2025-09-10', mensajes: 12, oportunidades: 0, hipotecario: 0, importe: 260 },
+                    { fecha: '2025-09-11', mensajes: 18, oportunidades: 0, hipotecario: 0, importe: 380 },
+                    { fecha: '2025-09-12', mensajes: 11, oportunidades: 0, hipotecario: 0, importe: 220 }
                 ],
                 weeklyData: [
                     { semana: 'Semana 1', mensajes: 60, oportunidades: 1, hipotecarios: 2, importe: 1800 },
@@ -1453,7 +1465,16 @@ const chartConfig = {
                 dailyData: [
                     { fecha: '2025-09-01', mensajes: 9, oportunidades: 0, hipotecario: 0, importe: 240 },
                     { fecha: '2025-09-02', mensajes: 14, oportunidades: 1, hipotecario: 1, importe: 310 },
-                    { fecha: '2025-09-03', mensajes: 11, oportunidades: 0, hipotecario: 0, importe: 260 }
+                    { fecha: '2025-09-03', mensajes: 11, oportunidades: 0, hipotecario: 0, importe: 260 },
+                    { fecha: '2025-09-04', mensajes: 16, oportunidades: 0, hipotecario: 1, importe: 350 },
+                    { fecha: '2025-09-05', mensajes: 13, oportunidades: 1, hipotecario: 0, importe: 280 },
+                    { fecha: '2025-09-06', mensajes: 10, oportunidades: 0, hipotecario: 0, importe: 220 },
+                    { fecha: '2025-09-07', mensajes: 15, oportunidades: 0, hipotecario: 1, importe: 320 },
+                    { fecha: '2025-09-08', mensajes: 18, oportunidades: 0, hipotecario: 0, importe: 390 },
+                    { fecha: '2025-09-09', mensajes: 12, oportunidades: 0, hipotecario: 0, importe: 270 },
+                    { fecha: '2025-09-10', mensajes: 17, oportunidades: 0, hipotecario: 0, importe: 360 },
+                    { fecha: '2025-09-11', mensajes: 20, oportunidades: 0, hipotecario: 0, importe: 420 },
+                    { fecha: '2025-09-12', mensajes: 16, oportunidades: 0, hipotecario: 0, importe: 340 }
                 ],
                 weeklyData: [
                     { semana: 'Semana 1', mensajes: 70, oportunidades: 1, hipotecarios: 1, importe: 1900 },
@@ -1467,7 +1488,16 @@ const chartConfig = {
                 dailyData: [
                     { fecha: '2025-09-01', mensajes: 6, oportunidades: 0, hipotecario: 1, importe: 200 },
                     { fecha: '2025-09-02', mensajes: 8, oportunidades: 1, hipotecario: 1, importe: 250 },
-                    { fecha: '2025-09-03', mensajes: 7, oportunidades: 0, hipotecario: 0, importe: 220 }
+                    { fecha: '2025-09-03', mensajes: 7, oportunidades: 0, hipotecario: 0, importe: 220 },
+                    { fecha: '2025-09-04', mensajes: 10, oportunidades: 0, hipotecario: 1, importe: 300 },
+                    { fecha: '2025-09-05', mensajes: 9, oportunidades: 1, hipotecario: 1, importe: 280 },
+                    { fecha: '2025-09-06', mensajes: 8, oportunidades: 0, hipotecario: 0, importe: 240 },
+                    { fecha: '2025-09-07', mensajes: 11, oportunidades: 0, hipotecario: 1, importe: 330 },
+                    { fecha: '2025-09-08', mensajes: 12, oportunidades: 1, hipotecario: 1, importe: 360 },
+                    { fecha: '2025-09-09', mensajes: 9, oportunidades: 0, hipotecario: 0, importe: 270 },
+                    { fecha: '2025-09-10', mensajes: 13, oportunidades: 0, hipotecario: 1, importe: 390 },
+                    { fecha: '2025-09-11', mensajes: 15, oportunidades: 0, hipotecario: 0, importe: 450 },
+                    { fecha: '2025-09-12', mensajes: 10, oportunidades: 0, hipotecario: 0, importe: 305 }
                 ],
                 weeklyData: [
                     { semana: 'Semana 1', mensajes: 50, oportunidades: 1, hipotecarios: 3, importe: 2000 },
@@ -1630,7 +1660,27 @@ function createChartsForSede(sede) {
     const opportunitiesField = currentTrimestre === 'q2' ? 'leads' : 'oportunidades';
     const messagesField = currentTrimestre === 'q2' ? 'conversaciones' : 'mensajes';
     
-    if (data.totales[opportunitiesField] > 0) {
+    // Manejar visibilidad de canvas y títulos para sedes con ambos tipos de gráficas
+    const hasOpportunities = data.totales[opportunitiesField] > 0;
+    const conversionCanvas = document.getElementById(`chart-${sede}-conversion`);
+    const cprCanvas = document.getElementById(`chart-${sede}-cpr`);
+    const titleElement = document.getElementById(`${sede}-second-chart-title`);
+    
+    if (conversionCanvas && cprCanvas && titleElement) {
+        if (hasOpportunities) {
+            // Mostrar gráfica de conversión
+            conversionCanvas.style.display = 'block';
+            cprCanvas.style.display = 'none';
+            titleElement.textContent = currentTrimestre === 'q2' ? 'Conversión de Leads' : 'Conversión de Oportunidades';
+        } else {
+            // Mostrar gráfica de CPR
+            conversionCanvas.style.display = 'none';
+            cprCanvas.style.display = 'block';
+            titleElement.textContent = currentTrimestre === 'q2' ? 'CPR por Día' : 'Importe por Día';
+        }
+    }
+    
+    if (hasOpportunities) {
         const convCtx = document.getElementById(`chart-${sede}-conversion`).getContext('2d');
         currentCharts.conversion = new Chart(convCtx, {
             type: 'doughnut',
@@ -1646,15 +1696,15 @@ function createChartsForSede(sede) {
             options: { ...chartConfig, scales: undefined }
         });
     } else {
-        // Gráfica de CPR para sedes sin leads
+        // Gráfica de CPR/Importe para sedes sin leads/oportunidades
         const cprCtx = document.getElementById(`chart-${sede}-cpr`).getContext('2d');
         currentCharts.cpr = new Chart(cprCtx, {
             type: 'bar',
             data: {
                 labels: data.dailyData.map(d => d.fecha.split('-')[2]),
                 datasets: [{
-                    label: 'CPR (Q)',
-                    data: data.dailyData.map(d => d.cpr),
+                    label: currentTrimestre === 'q2' ? 'CPR (Q)' : 'Importe (Q)',
+                    data: data.dailyData.map(d => currentTrimestre === 'q2' ? (d.cpr || 0) : (d.importe || 0)),
                     backgroundColor: colors.warning,
                     borderRadius: 8
                 }]
