@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1535,6 +1536,59 @@ const chartConfig = {
             });
         }
 
+// Función para actualizar KPIs de sedes dinámicamente
+function updateSedeKPIs(sede, data) {
+    const contentArea = document.getElementById(`content-${sede}`);
+    if (!contentArea) return;
+
+    const kpiCards = contentArea.querySelectorAll('.kpi-card');
+    const totales = data.totales;
+    const fields = getFieldNames();
+
+    if (kpiCards.length >= 7) {
+        // Actualizar los números según el trimestre
+        if (currentTrimestre === 'q2') {
+            kpiCards[0].querySelector('.kpi-number').textContent = totales.conversaciones?.toLocaleString() || '0';
+            kpiCards[0].querySelector('.kpi-label').textContent = 'Conversaciones';
+            kpiCards[1].querySelector('.kpi-number').textContent = totales.leads?.toLocaleString() || '0';
+            kpiCards[1].querySelector('.kpi-label').textContent = 'Leads';
+            kpiCards[2].querySelector('.kpi-number').textContent = totales.hipotecarios?.toLocaleString() || '0';
+            kpiCards[3].querySelector('.kpi-number').textContent = totales.alcance?.toLocaleString() || '0';
+            kpiCards[4].querySelector('.kpi-number').textContent = totales.impresiones?.toLocaleString() || '0';
+            kpiCards[5].querySelector('.kpi-number').textContent = totales.cprPromedio ? `Q${totales.cprPromedio}` : 'Q0';
+            kpiCards[6].querySelector('.kpi-number').textContent = totales.importe ? `Q${totales.importe.toLocaleString()}` : 'Q0';
+        } else { // Q3
+            kpiCards[0].querySelector('.kpi-number').textContent = totales.mensajes?.toLocaleString() || '0';
+            kpiCards[0].querySelector('.kpi-label').textContent = 'Mensajes';
+            kpiCards[1].querySelector('.kpi-number').textContent = totales.oportunidades?.toLocaleString() || '0';
+            kpiCards[1].querySelector('.kpi-label').textContent = 'Oportunidades';
+            kpiCards[2].querySelector('.kpi-number').textContent = totales.hipotecarios?.toLocaleString() || '0';
+            kpiCards[3].querySelector('.kpi-number').textContent = 'N/A';
+            kpiCards[3].querySelector('.kpi-label').textContent = 'Alcance';
+            kpiCards[4].querySelector('.kpi-number').textContent = 'N/A';
+            kpiCards[4].querySelector('.kpi-label').textContent = 'Impresiones';
+            kpiCards[5].querySelector('.kpi-number').textContent = totales.desembolsos?.toString() || '0';
+            kpiCards[5].querySelector('.kpi-label').textContent = 'Desembolsos';
+            kpiCards[6].querySelector('.kpi-number').textContent = totales.importe ? `Q${totales.importe.toLocaleString()}` : 'Q0';
+        }
+    }
+
+    // Actualizar título
+    const title = contentArea.querySelector('h2');
+    if (title) {
+        const sedeNames = {
+            'central': '🏢 Central',
+            'coban': '🌲 Cobán',
+            'escuintla': '🌊 Escuintla',
+            'mazatenango': '☕ Mazatenango',
+            'peten': '🦜 Petén',
+            'cuatrocaminos': '🛣️ 4 Caminos'
+        };
+        const trimestre = currentTrimestre === 'q2' ? 'Q2 2025' : 'Q3 2025';
+        title.textContent = `${sedeNames[sede]} - KPIs ${trimestre}`;
+    }
+}
+
 // Crear gráficas por sede
 function createChartsForSede(sede) {
     destroyExistingCharts();
@@ -1549,15 +1603,20 @@ function createChartsForSede(sede) {
     const data = getCurrentData()[sede];
     if (!data) return;
 
-    // Gráfica de conversaciones diarias
+    // Actualizar KPIs dinámicamente
+    updateSedeKPIs(sede, data);
+
+    // Gráfica de conversaciones/mensajes diarias
     const dailyCtx = document.getElementById(`chart-${sede}-daily`).getContext('2d');
+    const fields = getFieldNames();
+    
     currentCharts.daily = new Chart(dailyCtx, {
         type: 'line',
         data: {
             labels: data.dailyData.map(d => d.fecha.split('-')[2]),
             datasets: [{
-                label: 'Conversaciones',
-                data: data.dailyData.map(d => d.conversaciones),
+                label: currentTrimestre === 'q2' ? 'Conversaciones' : 'Mensajes',
+                data: data.dailyData.map(d => d[fields.messages] || d.conversaciones || d.mensajes || 0),
                 borderColor: colors.primary,
                 backgroundColor: 'rgba(255, 107, 26, 0.1)',
                 fill: true,
@@ -1567,15 +1626,18 @@ function createChartsForSede(sede) {
         options: chartConfig
     });
 
-    // Gráfica de conversión (solo para sedes con leads)
-    if (data.totales.leads > 0) {
+    // Gráfica de conversión (solo para sedes con leads/oportunidades)
+    const opportunitiesField = currentTrimestre === 'q2' ? 'leads' : 'oportunidades';
+    const messagesField = currentTrimestre === 'q2' ? 'conversaciones' : 'mensajes';
+    
+    if (data.totales[opportunitiesField] > 0) {
         const convCtx = document.getElementById(`chart-${sede}-conversion`).getContext('2d');
         currentCharts.conversion = new Chart(convCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Leads', 'Conversaciones sin Lead'],
+                labels: [currentTrimestre === 'q2' ? 'Leads' : 'Oportunidades', currentTrimestre === 'q2' ? 'Conversaciones sin Lead' : 'Mensajes sin Oportunidad'],
                 datasets: [{
-                    data: [data.totales.leads, data.totales.conversaciones - data.totales.leads],
+                    data: [data.totales[opportunitiesField], data.totales[messagesField] - data.totales[opportunitiesField]],
                     backgroundColor: [colors.success, colors.accent],
                     borderWidth: 3,
                     borderColor: '#fff'
@@ -1608,8 +1670,8 @@ function createChartsForSede(sede) {
         data: {
             labels: data.weeklyData.map(d => d.semana),
             datasets: [{
-                label: 'Conversaciones',
-                data: data.weeklyData.map(d => d.conversaciones),
+                label: currentTrimestre === 'q2' ? 'Conversaciones' : 'Mensajes',
+                data: data.weeklyData.map(d => d[messagesField] || d.conversaciones || d.mensajes || 0),
                 backgroundColor: colors.primary,
                 yAxisID: 'y'
             }, {
@@ -1643,26 +1705,27 @@ function createChartsForSede(sede) {
     });
 
     // Crear tablas
+    const tableHeaders1 = ['Fecha', currentTrimestre === 'q2' ? 'Conv' : 'Mens', currentTrimestre === 'q2' ? 'Leads' : 'Opor', 'Hip', 'Importe'];
     createDataTable(`table-${sede}-daily`, 
-        ['Fecha', 'Conv', 'Leads', 'Hip', 'CPR', 'Importe'],
+        tableHeaders1,
         data.dailyData.map(d => ({
             fecha: d.fecha,
-            conv: d.conversaciones,
-            leads: d.leads,
-            hip: d.hipotecario,
-            cpr: `Q${d.cpr.toFixed(2)}`,
-            importe: `Q${d.importe.toFixed(2)}`
+            messages: d[messagesField] || d.conversaciones || d.mensajes || 0,
+            opportunities: d[opportunitiesField] || d.leads || d.oportunidades || 0,
+            hip: d.hipotecario || 0,
+            importe: `Q${(d.importe || 0).toFixed(2)}`
         }))
     );
 
+    const tableHeaders2 = ['Semana', currentTrimestre === 'q2' ? 'Conv' : 'Mens', currentTrimestre === 'q2' ? 'Leads' : 'Opor', 'Hip', 'Importe'];
     createDataTable(`table-${sede}-weekly`,
-        ['Semana', 'Conv', 'Leads', 'Hip', 'Importe'],
+        tableHeaders2,
         data.weeklyData.map(d => ({
             semana: d.semana,
-            conv: d.conversaciones,
-            leads: d.leads,
-            hip: d.hipotecarios,
-            importe: `Q${d.importe.toFixed(2)}`
+            messages: d[messagesField] || d.conversaciones || d.mensajes || 0,
+            opportunities: d[opportunitiesField] || d.leads || d.oportunidades || 0,
+            hip: d.hipotecarios || 0,
+            importe: `Q${(d.importe || 0).toFixed(2)}`
         }))
     );
 }
@@ -1915,7 +1978,7 @@ function createGeneralCharts() {
                     
                     // Determinar el ID correcto según el trimestre
                     let contentId = `content-${sedeData}`;
-                    if (currentTrimestre === 'q3') {
+                    if (currentTrimestre === 'q3' && sedeData === 'general') {
                         contentId = `content-${sedeData}-q3`;
                     }
                     
